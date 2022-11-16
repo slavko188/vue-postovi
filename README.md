@@ -1,6 +1,6 @@
 # postovi
 
-## Project se odnosi na slicnost instagram postova.
+## Projekat se odnosi na slicnost instagram postova.
 
 ```
 
