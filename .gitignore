@@ -21,3 +21,11 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Main folders
+
+.main.js
+.vue.config.js
+
+*.index.html
+*.package.json
