@@ -36,51 +36,44 @@
 </template>
 
 <script>
+import { ref } from "vue";
 import InstagramCard from "@/components/InstagramCard.vue";
 import store from "@/store";
 import { db } from "@/firebase";
-import { collection, addDoc } from "firebase/firestore";
-
-/*let cards = [];
-
-cards = [
-  {
-    url: "https://picsum.photos/id/1/400/400",
-    description: "programer",
-    time: "prije 2 minuta",
-  },
-  {
-    url: "https://picsum.photos/seed/picsum/400/400",
-    description: "ovo je planina",
-    time: "prije pola sata",
-  },
-  {
-    url: "https://picsum.photos/id/0/400/400",
-    description: "ovo je lap top",
-    time: "prije 2 hour",
-  },
-];*/
+import { collection, addDoc, getDocs, query } from "firebase/firestore";
+import { computed } from "@vue/runtime-core";
 
 export default {
   name: "home",
-  data() {
-    return {
-      cards: [],
-      store,
-      newImageDescription: "",
-      newImageUrl: "",
+  setup() {
+    let store = ref("");
+    let cards = ref([
+      {
+        url: "http://picsum.photos/id/3/400/400",
+        description: "ovo je slika planine",
+        time: "two minits ago",
+      },
+    ]);
+    const newImageUrl = ref("");
+    const newImageDescription = ref("");
+
+    const getPost = () => {
+      const query = getDocs(collection(db, "posts"))
+        .then((query) => {
+          query.forEach((doc) => {
+            console.log("ID:", doc.id, "=>", "Podaci", doc.data());
+          });
+          console.log(query);
+        })
+
+        .catch((error) => {
+          console.log("nijesu podaci isporuceni", error);
+        });
     };
-  },
-  mounted() {
-    this.getPosts();
-  },
-  methods: {
-    getPosts() {
-      console.log("dohvat firebase");
-    },
-    postNewImage() {
-      const imageUrl = this.newImageUrl;
-      const imageDescription = this.newImageDescription;
+
+    const postNewImage = () => {
+      const imageUrl = newImageUrl;
+      const imageDescription = newImageDescription;
 
       const postCollRef = addDoc(collection(db, "posts"), {
         url: imageUrl,
@@ -90,22 +83,28 @@ export default {
       })
         .then((doc) => {
           console.log("Spremljeno", doc);
-          this.newImageDescription = ""; // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
-          this.newImageUrl = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
+          newImageDescription.value = ""; // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
+          newImageUrl.value = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
         })
         .catch((error) => {
           console.log("Dobili ste gresku", error);
         });
-    },
-  },
-  computed: {
-    filteredCards() {
-      let termin = this.store.searchTerm;
-      return this.cards.filter((card) => card.description.includes(termin));
-    },
-  },
-  components: {
-    InstagramCard,
+    };
+
+    const filteredCards = () => {
+      let termin = store.value.searchTerm;
+      return cards.value.filter((card) => card.description.includes(termin));
+    };
+
+    return {
+      cards: [],
+      store,
+      getPost,
+      postNewImage,
+      filteredCards,
+      newImageDescription: "",
+      newImageUrl: "",
+    };
   },
 };
 </script>
