@@ -1,4 +1,4 @@
 export default {
   searchTerm: "",
-  currentUser: false,
+  currentUser: "",
 };

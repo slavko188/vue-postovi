@@ -27,7 +27,7 @@
       </form>
       <instagram-card
         v-for="card in filteredCards"
-        :key="card.url"
+        :key="card.id"
         :info="card"
       />
     </div>
@@ -36,34 +36,37 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { app } from "@/firebase";
+import { ref, reactive } from "vue";
 import InstagramCard from "@/components/InstagramCard.vue";
 import store from "@/store";
 import { db } from "@/firebase";
-import { collection, addDoc, getDocs, query } from "firebase/firestore";
-import { computed } from "@vue/runtime-core";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 
 export default {
   name: "home",
+  components: {
+    InstagramCard,
+  },
   setup() {
-    let store = ref("");
-    let cards = ref([
-      {
-        url: "http://picsum.photos/id/3/400/400",
-        description: "ovo je slika planine",
-        time: "two minits ago",
-      },
-    ]);
+    const store = reactive({});
     const newImageUrl = ref("");
     const newImageDescription = ref("");
 
     const getPost = () => {
-      const query = getDocs(collection(db, "posts"))
+      const query = getDocs(collection(db, "post")) //proveriti metodu .orderBy('posted_at, desc)
         .then((query) => {
+          let cards = [];
           query.forEach((doc) => {
-            console.log("ID:", doc.id, "=>", "Podaci", doc.data());
+            const data = doc.data();
+
+            cards.value.push({
+              id: doc.id,
+              time: data.posted_at,
+              description: data.desc,
+              url: data.url,
+            });
           });
-          console.log(query);
         })
 
         .catch((error) => {
@@ -71,33 +74,26 @@ export default {
         });
     };
 
-    const postNewImage = () => {
-      const imageUrl = newImageUrl;
-      const imageDescription = newImageDescription;
-
-      const postCollRef = addDoc(collection(db, "posts"), {
-        url: imageUrl,
-        desc: imageDescription,
-        email: store.currentUser,
+    const postNewImage = async () => {
+      const postCollRef = await addDoc(collection(db, "posts"), {
+        url: newImageUrl.value,
+        desc: newImageDescription.value,
+        email: store,
         posted_at: Date.now(),
-      })
-        .then((doc) => {
-          console.log("Spremljeno", doc);
-          newImageDescription.value = ""; // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
-          newImageUrl.value = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
-        })
-        .catch((error) => {
-          console.log("Dobili ste gresku", error);
-        });
+      }).then((doc) => {
+        console.log("Spremljeno", doc);
+        newImageDescription.value = ""; // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
+        newImageUrl.value = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
+      });
     };
 
     const filteredCards = () => {
-      let termin = store.value.searchTerm;
-      return cards.value.filter((card) => card.description.includes(termin));
+      let termin = store.searchTerm;
+      return cards.filter((card) => card.description.includes(termin));
     };
 
     return {
-      cards: [],
+      cards: [{}],
       store,
       getPost,
       postNewImage,
