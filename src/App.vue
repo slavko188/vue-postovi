@@ -67,20 +67,18 @@ const router = useRouter();
 onAuthStateChanged(getAuth(), (user) => {
   const currentRoute = router.currentRoute; // vrace objekat trenutne rute(name,component,meta itd).
 
-  console.log(currentRoute);
-
   if (user) {
     console.log("***", user.email);
     store.currentUser = user.email;
 
-    if (!currentRoute.meta.needsUser) {
+    if (!currentRoute.value.meta.needsUser) {
       router.push({ name: "login" });
     }
   } else {
     console.log("nema ulogovanog korisnika");
     store.currentUser = null;
 
-    if (currentRoute.meta.needsUser) {
+    if (currentRoute.value.meta.needsUser) {
       router.push({ name: "login" });
     }
   }

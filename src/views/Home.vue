@@ -2,16 +2,14 @@
   <div class="row">
     <div class="col-1"></div>
     <div class="col-9">
-      <form @submit.prevent="postNewImage" class="form-inline mb-5">
+      <form @submit.prevent="postNewImage" class="mb-5">
         <div class="form-group">
-          <label for="imageUrl">Image URL</label>
-          <input
-            v-model="newImageUrl"
-            type="text"
-            class="form-control ml-2"
-            placeholder="Enter the image URL"
-            id="imageUrl"
-          />
+          <croppa
+            ref="imageReference"
+            :width="400"
+            :height="400"
+            placeholder=" Ucitaj sliku"
+          ></croppa>
         </div>
         <div class="form-group">
           <label for="imageDescription">Description</label>
@@ -35,72 +33,64 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { app } from "@/firebase";
-import { ref, reactive } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import InstagramCard from "@/components/InstagramCard.vue";
 import store from "@/store";
 import { db } from "@/firebase";
 import { collection, addDoc, getDocs } from "firebase/firestore";
+import { Croppa } from "vue-croppa";
 
-export default {
-  name: "home",
-  components: {
-    InstagramCard,
-  },
-  setup() {
-    const store = reactive({});
-    const newImageUrl = ref("");
-    const newImageDescription = ref("");
+let cards = ref([]);
+const newImageUrl = ref("");
+const newImageDescription = ref("");
 
-    const getPost = () => {
-      const query = getDocs(collection(db, "post")) //proveriti metodu .orderBy('posted_at, desc)
-        .then((query) => {
-          let cards = [];
-          query.forEach((doc) => {
-            const data = doc.data();
+onMounted(() => {
+  getPost().value;
+});
 
-            cards.value.push({
-              id: doc.id,
-              time: data.posted_at,
-              description: data.desc,
-              url: data.url,
-            });
-          });
-        })
-
-        .catch((error) => {
-          console.log("nijesu podaci isporuceni", error);
+const getPost = async () => {
+  const query = await getDocs(collection(db, "posts")) //proveriti metodu .orderBy('posted_at, desc)
+    .then((query) => {
+      let cards = [];
+      query.forEach((doc) => {
+        const data = doc.data();
+        cards.push({
+          id: doc.id,
+          description: data.desc,
+          email: store.currentUser,
+          time: data.posted_at,
+          url: data.url,
         });
-    };
-
-    const postNewImage = async () => {
-      const postCollRef = await addDoc(collection(db, "posts"), {
-        url: newImageUrl.value,
-        desc: newImageDescription.value,
-        email: store,
-        posted_at: Date.now(),
-      }).then((doc) => {
-        console.log("Spremljeno", doc);
-        newImageDescription.value = ""; // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
-        newImageUrl.value = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
       });
-    };
+    })
 
-    const filteredCards = () => {
-      let termin = store.searchTerm;
-      return cards.filter((card) => card.description.includes(termin));
-    };
-
-    return {
-      cards: [{}],
-      store,
-      getPost,
-      postNewImage,
-      filteredCards,
-      newImageDescription: "",
-      newImageUrl: "",
-    };
-  },
+    .catch((error) => {
+      console.log("nijesu podaci isporuceni", error);
+    });
 };
+
+const postNewImage = async () => {
+  imageReference.value.generateBlob((blobData) => {
+    console.log(blobData);
+  });
+  return;
+
+  const postCollRef = await addDoc(collection(db, "posts"), {
+    url: newImageUrl.value,
+    desc: newImageDescription.value,
+    email: store,
+    posted_at: Date.now(),
+  }).then((doc) => {
+    console.log("Spremljeno", doc);
+    newImageDescription.value = ""; // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
+    newImageUrl.value = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
+  });
+};
+
+const filteredCards = computed(() => {
+  let termin = store.searchTerm;
+  return cards.value.filter((card) => card.description.includes(termin));
+});
 </script>

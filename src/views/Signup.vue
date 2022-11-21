@@ -19,12 +19,12 @@ email"
               />
             </div>
             <div class="form-group">
-              <label for="exampleInputPassword1">Password</label>
+              <label for="exampleInputPassword">Password</label>
               <input
                 type="password"
                 v-model="password"
                 class="form-control"
-                id="exampleInputPassword1"
+                id="exampleInputPassword"
                 placeholder="Password"
               />
               <p v-if="errMsg">{{ errMsg }}</p>
@@ -37,7 +37,7 @@ email"
                 v-model="passwordRepeat"
                 class="form-control"
                 id="exampleInputPassword1"
-                placeholder="Password"
+                placeholder="passwordRepeat"
               />
             </div>
 
@@ -61,9 +61,15 @@ const email = ref("");
 const password = ref("");
 const errMsg = ref();
 const router = useRouter();
+const passwordRepeat = ref("");
 
 const signup = () => {
-  createUserWithEmailAndPassword(getAuth(), email.value, password.value)
+  createUserWithEmailAndPassword(
+    getAuth(),
+    email.value,
+    password.value,
+    passwordRepeat.value
+  )
     .then((result) => {
       console.log("uspesno logovanje", result);
       //console.log(auth.currentUser);

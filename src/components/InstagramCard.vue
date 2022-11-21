@@ -5,22 +5,22 @@
       <img class="card-img-top" :src="info.url" />
     </div>
     <div class="card-footer text-muted">
-      {{ postedFromNow }}
+      {{ info.time }}
     </div>
   </div>
 </template>
 
 <script>
 //import moment from "moment"; // moment pretvara intedzer u data.
-import { computed } from "vue";
+//import { computed } from "vue";
 
 export default {
   props: ["info"],
   name: "InstagramCard",
-  computed: {
-    postedFromNow() {
-      return moment(this.info.time).fromNow();
-    },
-  },
+  // computed: {
+  // postedFromNow() {
+  // return moment(this.info.time).fromNow();
+  //},
+  //},
 };
 </script>
