@@ -11,12 +11,16 @@
 </template>
 
 <script>
+import { Croppa } from "vue-croppa";
 //import moment from "moment"; // moment pretvara intedzer u data.
 //import { computed } from "vue";
 
 export default {
-  props: ["info"],
+ const props = ({
+  info: info,
+ })
   name: "InstagramCard",
+  Croppa,
   // computed: {
   // postedFromNow() {
   // return moment(this.info.time).fromNow();
