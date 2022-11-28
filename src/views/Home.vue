@@ -9,7 +9,9 @@
             :height="400"
             placeholder=" Ucitaj sliku"
             v-model="imageReference"
-          ></croppa>
+          >
+            {{ Ucitaj }} sliku</croppa
+          >
         </div>
         <div class="form-group">
           <label for="imageDescription">Description</label>
@@ -34,33 +36,34 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, toRefs, reactive, computed, onMounted, onUnmounted } from "vue";
 import InstagramCard from "@/components/InstagramCard.vue";
 import store from "@/store";
 import { db, storage } from "@/firebase";
 import { collection, addDoc, getDocs } from "firebase/firestore";
-import { Croppa } from "vue-croppa";
+import { getStorage } from "@firebase/storage";
 
 export default {
   name: "home",
 
   components: {
     InstagramCard,
-    Croppa,
   },
   setup() {
-    let cards = ref([]);
-    const newImageDescription = ref("");
-    const croppa = ref();
-    const imageReference = ref("");
+    const state = reactive({
+      imageReference: null,
+      newImageUrl: "",
+      newImageDescription: "",
+      cards: [],
+    });
 
     const getPost = () => {
-      const query = getDocs(collection(db, "posts")) //proveriti metodu .orderBy('posted_at, desc)
+      const query = getDocs(collection(db, "drustvena-mreza")) //proveriti metodu .orderBy('posted_at, desc)
         .then((query) => {
-          let cards = [];
+          state.cards = [];
           query.forEach((doc) => {
             const data = doc.data();
-            cards.value.push({
+            state.cards.push({
               id: doc.id,
               description: data.desc,
               email: store.currentUser,
@@ -72,7 +75,6 @@ export default {
     };
 
     onMounted(getPost);
-    onUnmounted(getPost);
   },
   getImage() {
     //omotac oko callback funkcije
@@ -88,13 +90,14 @@ const postNewImage = async () => {
   try {
     let blobData = await getImage().value;
     let imageName = "post/" + store.currentUser + "/" + Date.now();
-    let result = await storage.ref(imageName).put(blobData);
-    let url = await result.ref.getDownloadURL(); //promise
+    let result = await getStorage()
+      .storageRef(storage, imageName)
+      .put(blobData);
+    let url = await result.storageRef().getDownloadURL(); //promise
 
-    console.log("Javni link", url);
-    const imageDescription = newImageDescription.value;
+    const imageDescription = newImageDescription;
 
-    const postCollRef = await addDoc(collection(db, "posts"), {
+    const postCollRef = await addDoc(collection(db, "drustvena-mreza"), {
       url: newImageUrl.value,
       desc: newImageDescription.value,
       email: store,
@@ -109,23 +112,20 @@ const postNewImage = async () => {
     console.error("Greska", e);
   }
 
-  const filteredCards = async () => {
+  const filteredCards = computed(function () {
     let termin = store.searchTerm;
-    return await cards.value.filter((card) =>
-      card.description.includes(termin)
-    );
-  };
+    return cards.value.filter((card) => card.description.includes(termin));
+  });
+
   return {
     cards,
     store,
-    newImageDescription,
     filteredCards,
     getPost,
     postCollRef,
-    postNewImage,
     getImage,
     getPost,
-    imageReference: null,
+    ...toRefs(state),
   };
 };
 </script>

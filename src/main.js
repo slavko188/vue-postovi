@@ -6,5 +6,6 @@ import Croppa from "vue-croppa";
 
 const app = createApp(App);
 
+app.use(Croppa);
 app.use(router);
 app.mount("#app");
