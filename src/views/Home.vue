@@ -52,7 +52,6 @@ export default {
   setup() {
     const state = reactive({
       imageReference: null,
-      newImageUrl: "",
       newImageDescription: "",
       cards: [],
     });
@@ -73,59 +72,59 @@ export default {
           });
         });
     };
-
     onMounted(getPost);
-  },
-  getImage() {
-    //omotac oko callback funkcije
-    return new Promise((resolve, error) => {
-      imageReference.value.generateBlob((data) => {
-        resolve(data);
+
+    function getImage() {
+      //omotac oko callback funkcije
+      return new Promise((resolve, error) => {
+        imageReference.value.generateBlob((data) => {
+          resolve(data);
+        });
       });
-    });
+    }
+
+    const postNewImage = async () => {
+      try {
+        let blobData = await getImage().value;
+        let imageName = "post/" + store.currentUser + "/" + Date.now();
+        let result = await getStorage()
+          .storageRef(storage, imageName)
+          .put(blobData);
+        let url = await result.storageRef().getDownloadURL(); //promise
+
+        const imageDescription = newImageDescription;
+
+        const postCollRef = await addDoc(collection(db, "drustvena-mreza"), {
+          url: newImageUrl.value,
+          desc: newImageDescription.value,
+          email: store,
+          posted_at: Date.now(),
+        });
+        console.log("Spremljeno", doc);
+        // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
+        newImageDescription.value = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
+
+        getPost().value;
+      } catch (e) {
+        console.error("Greska", e);
+      }
+
+      const filteredCards = computed(function () {
+        let termin = store.searchTerm;
+        return cards.value.filter((card) => card.description.includes(termin));
+      });
+
+      return {
+        cards,
+        store,
+        filteredCards,
+        getPost,
+        postCollRef,
+        getImage,
+        getPost,
+        ...toRefs(state),
+      };
+    };
   },
-};
-
-const postNewImage = async () => {
-  try {
-    let blobData = await getImage().value;
-    let imageName = "post/" + store.currentUser + "/" + Date.now();
-    let result = await getStorage()
-      .storageRef(storage, imageName)
-      .put(blobData);
-    let url = await result.storageRef().getDownloadURL(); //promise
-
-    const imageDescription = newImageDescription;
-
-    const postCollRef = await addDoc(collection(db, "drustvena-mreza"), {
-      url: newImageUrl.value,
-      desc: newImageDescription.value,
-      email: store,
-      posted_at: Date.now(),
-    });
-    console.log("Spremljeno", doc);
-    // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
-    newImageDescription.value = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
-
-    getPost().value;
-  } catch (e) {
-    console.error("Greska", e);
-  }
-
-  const filteredCards = computed(function () {
-    let termin = store.searchTerm;
-    return cards.value.filter((card) => card.description.includes(termin));
-  });
-
-  return {
-    cards,
-    store,
-    filteredCards,
-    getPost,
-    postCollRef,
-    getImage,
-    getPost,
-    ...toRefs(state),
-  };
 };
 </script>
