@@ -5,13 +5,12 @@
       <form @submit.prevent="postNewImage" class="mb-5">
         <div class="form-group">
           <croppa
+            v-model="imageReference"
             :width="400"
             :height="400"
             placeholder=" Ucitaj sliku"
-            v-model="imageReference"
           >
-            {{ Ucitaj }} sliku</croppa
-          >
+          </croppa>
         </div>
         <div class="form-group">
           <label for="imageDescription">Description</label>
@@ -49,20 +48,24 @@ export default {
   components: {
     InstagramCard,
   },
-  setup() {
+  setup(props) {
+    const cards = ref([]);
+
     const state = reactive({
       imageReference: null,
       newImageDescription: "",
-      cards: [],
+      imageName: "",
     });
 
-    const getPost = () => {
-      const query = getDocs(collection(db, "drustvena-mreza")) //proveriti metodu .orderBy('posted_at, desc)
+    function getPost() {
+      const query = getDocs(collection(db, "posts")) //proveriti metodu .orderBy('posted_at, desc)
         .then((query) => {
-          state.cards = [];
+          cards = [];
           query.forEach((doc) => {
             const data = doc.data();
-            state.cards.push({
+            console.log(data);
+
+            cards.value.push({
               id: doc.id,
               description: data.desc,
               email: store.currentUser,
@@ -71,43 +74,51 @@ export default {
             });
           });
         });
-    };
+    }
     onMounted(getPost);
 
     function getImage() {
       //omotac oko callback funkcije
       return new Promise((resolve, error) => {
-        imageReference.value.generateBlob((data) => {
+        imageReference.generateBlob((data) => {
           resolve(data);
         });
       });
     }
 
-    const postNewImage = async () => {
-      try {
-        let blobData = await getImage().value;
-        let imageName = "post/" + store.currentUser + "/" + Date.now();
-        let result = await getStorage()
-          .storageRef(storage, imageName)
-          .put(blobData);
-        let url = await result.storageRef().getDownloadURL(); //promise
+    function postNewImage() {
+      getImage()
+        .then((data) => {
+          console.log(blobData);
+          let imageName =
+            "posts/" + store.currentUser + "/" + Date.now() + ".png";
 
-        const imageDescription = newImageDescription;
+          return getStorage().ref(imageName).put(blobData);
+        })
+        .then((result) => {
+          return result.ref.getDownloadURL();
+        })
+        .then((url) => {
+          console.log("javni link", url);
+          const imageDescription = newImageDescription;
 
-        const postCollRef = await addDoc(collection(db, "drustvena-mreza"), {
-          url: newImageUrl.value,
-          desc: newImageDescription.value,
-          email: store,
-          posted_at: Date.now(),
+          return (postCollRef = addDoc(collection(db, "drustvena-mreza"), {
+            desc: ImageDescription,
+            email: store,
+            posted_at: Date.now(),
+          }));
+        })
+        .then((doc) => {
+          console.log("Spremljeno", doc);
+          // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
+          newImageDescription = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
+          imageReference.remove();
+
+          getPost();
+        })
+        .catch((e) => {
+          console.error(e);
         });
-        console.log("Spremljeno", doc);
-        // sa ovim ponistavamo da u polje za unos kad se posalju podaci da ostane prazno.
-        newImageDescription.value = ""; // sa ovim isto ponistavamo da posle unosa u input polje ostane prazno,kad se podaci posalju.
-
-        getPost().value;
-      } catch (e) {
-        console.error("Greska", e);
-      }
 
       const filteredCards = computed(function () {
         let termin = store.searchTerm;
@@ -115,16 +126,18 @@ export default {
       });
 
       return {
-        cards,
+        newImageDescription,
+        imageDescription,
+        imageReference,
         store,
         filteredCards,
         getPost,
         postCollRef,
         getImage,
-        getPost,
+
         ...toRefs(state),
       };
-    };
+    }
   },
 };
 </script>
