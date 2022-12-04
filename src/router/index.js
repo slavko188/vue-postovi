@@ -11,6 +11,7 @@ export const routes = [
       needsUser: true,
     },
   },
+
   {
     path: "/login",
     name: "login",

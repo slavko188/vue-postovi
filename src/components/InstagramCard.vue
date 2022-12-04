@@ -1,31 +1,33 @@
 <template>
   <div class="card text-center">
-    <div class="card-header">{{ fullInfo.description }}</div>
+    <div class="card-header">{{ info.description }}</div>
     <div class="card-body p-0">
-      <img class="card-img-top" :src="fullInfo.url" />
+      <img class="card-img-top" :src="info.url" />
     </div>
     <div class="card-footer text-muted">
-      {{ fullInfo.time }}
+      {{ info.time }}
     </div>
   </div>
 </template>
 
 <script>
 import moment from "moment"; // moment pretvara intedzer u data.
-//import { computed } from "vue";
+import { computed } from "vue";
 
 export default {
   name: "InstagramCard",
+  props: {
+    info: info,
+  },
 
   setup(props) {
-    const fullInfo = computed(() => {
-      return `${props.info}`;
-    });
-
-    fullInfo.props = ["info"];
+    console.log(props.info);
+    // const fullInfo = computed(() => {
+    //   return `${props.info}`;
+    // });
 
     return {
-      fullInfo,
+      //fullInfo,
     };
 
     const transformComp = computed(function () {
