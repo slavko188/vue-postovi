@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
+import NotFound from "../views/NotFound";
 import store from "@/store";
 
 export const routes = [
@@ -16,13 +17,20 @@ export const routes = [
     path: "/login",
     name: "login",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Login.vue"),
+      import(/* webpackChunkName: "login" */ "../views/Login.vue"),
   },
   {
     path: "/signup",
     name: "Signup",
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Signup.vue"),
+      import(/* webpackChunkName: "signup" */ "../views/Signup.vue"),
+  },
+
+  {
+    // catchall 404
+    path: "/:catchAll(.*)",
+    name: "NotFound",
+    component: NotFound,
   },
 ];
 

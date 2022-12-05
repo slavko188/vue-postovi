@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-//import InstagramCard from "@/components/InstagramCard.vue";
+import InstagramCard from "@/components/InstagramCard.vue";
 import { ref, toRefs, computed, onMounted, onUnmounted } from "vue";
 import store from "@/store";
 import { db, storage } from "@/firebase";
@@ -92,9 +92,8 @@ function postNewImage() {
     .then((url) => {
       console.log("javni link", url);
       const imageDescription = newImageDescription;
-      // return imageDescription;
 
-      return (postCollRef = addDoc(collection(db, "drustvena-mreza"), {
+      return (postCollRef = addDoc(collection(db, "postovi"), {
         desc: newImageDescription,
         email: store,
         posted_at: Date.now(),

@@ -54,7 +54,7 @@ email"
 <script setup>
 import { ref } from "vue";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { app } from "@/firebase";
+//import { app } from "@/firebase";
 import { useRouter } from "vue-router";
 
 const email = ref("");
@@ -63,7 +63,7 @@ const errMsg = ref();
 const router = useRouter();
 const passwordRepeat = ref("");
 
-const signup = () => {
+function signup() {
   createUserWithEmailAndPassword(
     getAuth(),
     email.value,
@@ -93,5 +93,5 @@ const signup = () => {
           break;
       }
     });
-};
+}
 </script>

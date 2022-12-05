@@ -58,7 +58,6 @@
 
 <script setup>
 import store from "@/store";
-import { app } from "@/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "vue-router";
 
@@ -109,14 +108,14 @@ const logout = () => {
 
 nav {
   padding: 30px;
-
   a {
     font-weight: bold;
-    color: #2c3e50;
+    text-decoration: none;
+  }
 
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+  &.router-link-exact-active {
+    color: white;
+    background: rgb(21, 45, 180);
   }
 }
 </style>

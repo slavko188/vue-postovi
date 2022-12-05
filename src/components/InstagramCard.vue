@@ -16,9 +16,7 @@ import { computed } from "vue";
 
 export default {
   name: "InstagramCard",
-  props: {
-    info: info,
-  },
+  props: ["info"],
 
   setup(props) {
     console.log(props.info);
@@ -28,6 +26,7 @@ export default {
 
     return {
       //fullInfo,
+      info,
     };
 
     const transformComp = computed(function () {

@@ -39,7 +39,7 @@ email"
   </div>
 </template>
 <script setup>
-//import { app } from "@/firebase";
+import { app } from "@/firebase";
 import { ref } from "vue";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "vue-router";
